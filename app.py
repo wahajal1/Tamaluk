@@ -1,14 +1,15 @@
 import chainlit as cl
 from transformers import pipeline
 
-# نجهز الموديل
-chatbot = pipeline("text-generation", model="gpt2")
+chatbot = None  # نخليها None بالبداية
 
 @cl.on_message
 async def main(message: str):
-    # نرسل رسالة للموديل
-    response = chatbot(message, max_new_tokens=50, do_sample=True, temperature=0.7)
-    reply = response[0]["generated_text"][len(message):].strip()
+    global chatbot
+    if chatbot is None:
+        chatbot = pipeline("text-generation", model="distilgpt2")
 
-    # نرجع الرد للواجهة
+    response = chatbot(message, max_new_tokens=50, do_sample=True, temperature=0.7)
+    reply = response[0]["generated_text"]
+
     await cl.Message(content=reply).send()
